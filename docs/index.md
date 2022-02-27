@@ -1,8 +1,11 @@
 # 研-MS8402-44000-M01-地球流体动力学I
 
+- [课程主页](https://grwei.github.io/SJTU_2021-2022-1-MS8402/)
+- [个人主页](https://grwei.github.io/)
+
 ## Contents
 
-- [Homework 1](../hw/hw1_危国锐_120034910021.pdf)
+- [Homework 1](hw1_危国锐_120034910021.pdf)
 
 ## Contact me
 
