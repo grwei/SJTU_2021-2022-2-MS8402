@@ -2,6 +2,7 @@
 ref/*.pdf
 ref/*.epub
 ~$*
+*.asv
 
 # Prerequisites
 *.d

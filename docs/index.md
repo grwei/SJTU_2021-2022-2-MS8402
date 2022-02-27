@@ -1,3 +1,14 @@
+# 研-MS8402-44000-M01-地球流体动力学I
+
+## Contents
+
+- [Homework 1](../hw/hw1_危国锐_120034910021.pdf)
+
+## Contact me
+
+- Guorui Wei (危国锐)
+- E-mail: 313017602@qq.com; weiguorui@sjtu.edu.cn
+
 ## Welcome to GitHub Pages
 
 You can use the [editor on GitHub](https://github.com/grwei/SJTU_2021-2022-1-MS8402/edit/main/docs/index.md) to maintain and preview the content for your website in Markdown files.
