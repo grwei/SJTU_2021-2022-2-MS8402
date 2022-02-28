@@ -88,7 +88,7 @@ beta_T = 0.15; % [kg/m^3/(deg C)]
 beta_S = 0.78; % [kg/m^3/(g/kg)]
 beta_p = 4.5;  % [kg/m^3/dbar]
 
-func_rho_linear = @(T,S,p) rho_0 * (1 - beta_T*(T-T(1)) + beta_S*(S-S(1)) + beta_p*(p-p(1)));
+func_rho_linear = @(T,S,p) (rho_0 - beta_T*(T-T(1)) + beta_S*(S-S(1)) + beta_p*(p-p(1)));
 site_struct.rho_linear = func_rho_linear(site_struct.CT, site_struct.SA, site_struct.p);
 site_struct.rho_i_linear = func_rho_linear(site_struct.CT_i,site_struct.SA_i,site_struct.p_i);
 
@@ -117,6 +117,6 @@ set(t_Axes_linear,'YDir','reverse','FontSize',10,'TickLabelInterpreter','latex',
 %
 linkaxes([t_Axes_TEOS,t_Axes_linear],'y');
 legend([t_plot_2,t_plot_4],["TEOS-10","Linear EOS"],"Location",'southwest','Interpreter','latex',"Box","off");
-annotation('textbox',[0.36+0.5*(num_Tile-1) 0.68 0.10 0.06],'String',textbox_string,'LineStyle','none','FontWeight','bold','Interpreter','latex');
+annotation('textbox',[.36+0.5*(num_Tile-1) .68 .10 .06],'String',textbox_string,'LineStyle','none','FontWeight','bold','Interpreter','latex');
 
 end
