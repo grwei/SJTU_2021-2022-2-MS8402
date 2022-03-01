@@ -3,7 +3,7 @@
 % Author: Guorui Wei (危国锐) (313017602@qq.com; weiguorui@sjtu.edu.cn)
 % Student ID: 120034910021
 % Created: 2022-02-27
-% Last modified: 2022-02-28
+% Last modified: 2022-03-01
 
 %% Initialize project
 
@@ -13,8 +13,8 @@ init_env();
 %% Question 2
 
 %
-u = [-.25,-.25,.05,.03]; % [m/s]
-v = [0,-.01,.25,.30]; % [m/s]
+u = [-.25,-.25,.25,.03]; % [m/s]
+v = [0,-.01,.05,.03]; % [m/s]
 delta_x = 5e5; % [m]
 delta_y = 5.4e5; % [m]
 %
