@@ -3,7 +3,7 @@
 % Author: Guorui Wei (危国锐) (313017602@qq.com; weiguorui@sjtu.edu.cn)
 % Student ID: 120034910021
 % Created: 2022-02-27
-% Last modified: 2022-03-01
+% Last modified: 2022-03-06
 
 %% Initialize project
 
@@ -86,9 +86,9 @@ site_struct.p_i = p_i; % specific query points at which the interpolated SA_i an
 rho_0 = 1027; % [kg/m^3]
 beta_T = 0.15; % [kg/m^3/(deg C)]
 beta_S = 0.78; % [kg/m^3/(g/kg)]
-beta_p = 4.5;  % [kg/m^3/dbar]
+beta_p = 4.5/rho_0;  % [kg/m^3/dbar]
 
-func_rho_linear = @(T,S,p) (rho_0 - beta_T*(T-T(1)) + beta_S*(S-S(1)) + beta_p*(p-p(1)));
+func_rho_linear = @(T,S,p) rho_0 - beta_T*(T-T(1)) + beta_S*(S-S(1)) + beta_p*(p-p(1));
 site_struct.rho_linear = func_rho_linear(site_struct.CT, site_struct.SA, site_struct.p);
 site_struct.rho_i_linear = func_rho_linear(site_struct.CT_i,site_struct.SA_i,site_struct.p_i);
 
@@ -115,7 +115,7 @@ hold on
 t_plot_4 = plot(site_struct.rho_linear,site_struct.p,'o',"MarkerSize",4,'Color','#D95319',"DisplayName",'');
 set(t_Axes_linear,'YDir','reverse','FontSize',10,'TickLabelInterpreter','latex','XAxisLocation','top','YAxisLocation','right','YTickLabel',{},'Box','off','Color','none','XColor','#D95319','YColor','#D95319','YLimitMethod','tight')
 %
-linkaxes([t_Axes_TEOS,t_Axes_linear],'y');
+linkaxes([t_Axes_TEOS,t_Axes_linear],'xy');
 legend([t_plot_2,t_plot_4],["TEOS-10","Linear EOS"],"Location",'southwest','Interpreter','latex',"Box","off");
 annotation('textbox',[.36+0.5*(num_Tile-1) .68 .10 .06],'String',textbox_string,'LineStyle','none','FontWeight','bold','Interpreter','latex');
 
