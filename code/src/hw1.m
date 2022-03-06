@@ -117,6 +117,6 @@ set(t_Axes_linear,'YDir','reverse','FontSize',10,'TickLabelInterpreter','latex',
 %
 linkaxes([t_Axes_TEOS,t_Axes_linear],'xy');
 legend([t_plot_2,t_plot_4],["TEOS-10","Linear EOS"],"Location",'southwest','Interpreter','latex',"Box","off");
-annotation('textbox',[.36+0.5*(num_Tile-1) .68 .10 .06],'String',textbox_string,'LineStyle','none','FontWeight','bold','Interpreter','latex');
+annotation('textbox',[.36+0.48*(num_Tile-1) .68 .10 .06],'String',textbox_string,'LineStyle','none','FontWeight','bold','Interpreter','latex');
 
 end
