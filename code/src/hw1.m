@@ -81,23 +81,23 @@ end
 site_struct.p_i = p_i; % specific query points at which the interpolated SA_i and CT_i are required [ dbar ]
 [site_struct.SA_i,site_struct.CT_i] = gsw_SA_CT_interp(site_struct.SA,site_struct.CT,site_struct.p,p_i); % SA and CT interpolation to p_i on a cast
 
-%%% 1. Calculate density with the linear Equations of State (EOS).
-
-rho_0 = 1027; % [kg/m^3]
-beta_T = 0.15; % [kg/m^3/(deg C)]
-beta_S = 0.78; % [kg/m^3/(g/kg)]
-beta_p = 4.5/rho_0;  % [kg/m^3/dbar]
-
-func_rho_linear = @(T,S,p) rho_0 - beta_T*(T-T(1)) + beta_S*(S-S(1)) + beta_p*(p-p(1));
-site_struct.rho_linear = func_rho_linear(site_struct.CT, site_struct.SA, site_struct.p);
-site_struct.rho_i_linear = func_rho_linear(site_struct.CT_i,site_struct.SA_i,site_struct.p_i);
-
-%%% 2. Use TEOS-10 to compute the density.
+%%% 1. Use TEOS-10 to compute the density.
 % NOTE: Since the location of site A & B is not provided, I have to let SA, CT
 % (TEOS-10) be SP, t, and therefore the results here should not be correct.
 
 site_struct.rho_TEOS_10 = gsw_rho_CT_exact(site_struct.SA,site_struct.CT,site_struct.p); % Calculates in-situ density from Absolute Salinity and Conservative Temperature.
 site_struct.rho_i_TEOS_10 = gsw_rho_CT_exact(site_struct.SA_i,site_struct.CT_i,site_struct.p_i);
+
+%%% 2. Calculate density with the linear Equations of State (EOS).
+
+rho_0 = site_struct.rho_TEOS_10(1); % [kg/m^3]
+beta_T = 0.15; % [kg/m^3/(deg C)]
+beta_S = 0.78; % [kg/m^3/(g/kg)]
+beta_p = 4.5e-3;  % [kg/m^3/dbar]
+
+func_rho_linear = @(T,S,p) rho_0 - beta_T*(T-T(1)) + beta_S*(S-S(1)) + beta_p*(p-p(1));
+site_struct.rho_linear = func_rho_linear(site_struct.CT, site_struct.SA, site_struct.p);
+site_struct.rho_i_linear = func_rho_linear(site_struct.CT_i,site_struct.SA_i,site_struct.p_i);
 
 %%% plot
 
