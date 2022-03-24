@@ -1,5 +1,5 @@
 %% hw1.m
-% Description: MATLAB code used in homework 1 (MS8402, 2022 Spring)
+% Description: MATLAB code for homework 1 (MS8402, 2022 Spring)
 % Author: Guorui Wei (危国锐) (313017602@qq.com; weiguorui@sjtu.edu.cn)
 % Student ID: 120034910021
 % Created: 2022-02-27

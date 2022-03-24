@@ -1,0 +1,109 @@
+%% midterm.m
+% Description: MATLAB code for mid-term exam (MS8402, 2022 Spring)
+% Author: Guorui Wei (危国锐) (313017602@qq.com; weiguorui@sjtu.edu.cn)
+% Student ID: 120034910021
+% Created: 2022-03-24
+% Last modified: 2022-03-
+
+%% Initialize project
+
+clc; clear; close all
+init_env();
+
+%% Problem 1
+
+%
+f = 1e-4;           % [s^{-1}]
+h_1 = 200;          % [m]
+U_1 = 0.5;          % [m/s]
+L_1 = 10e3;         % [m]
+h_2 = [160,100];    % [m]
+%
+h_2_inf = L_1.*h_1.*f./(U_1+L_1.*f);
+U_2_sup = U_1.*sqrt(1+L_1.*f./U_1);
+U_2 = @(h_2) U_1.*sqrt(1-(L_1.*(h_1./h_2 -1).*f)./U_1);
+L_2 = @(h_2) L_1.*sqrt((U_1.*h_1)./(U_1.*h_2-(h_1-h_2).*L_1.*f));
+%
+fprintf("h_2 = %g:\t U_2 = %.4g, L_2 = %.4g,\n" + ...
+    "h_2 = %g:\t U_2 = %.3g, L_2 = %.3g.\n" + ...
+    "h_2 = %g:\t U_2 = %.3g, L_2 = %.3g.\n", ...
+    h_2(1),U_2(h_2(1)),L_2(h_2(1)), ...
+    h_2_inf+eps,U_2(h_2_inf+eps),L_2(h_2_inf+eps), ...
+    h_2(2),U_2(h_2(2)),L_2(h_2(2)));
+%
+figure("Name","Problem 1")
+t_TCL_1 = tiledlayout(1,1,"TileSpacing","tight","Padding","tight");
+t_Axes_1 = nexttile(t_TCL_1,1);
+h_2 = linspace(7*h_2_inf,h_2_inf,6001);
+t_plot_1_L2 = plot(t_Axes_1,h_2,L_2(h_2),'-',"DisplayName",'$L_2$');
+set(t_Axes_1,"YDir",'normal',"TickLabelInterpreter",'latex',"FontSize",10,'Box','off');
+ylabel(t_Axes_1,"$L_2$ (m)","Interpreter",'latex');
+xlabel(t_Axes_1,"$h_2$ (m)","Interpreter",'latex');
+yyaxis(t_Axes_1,'right');
+t_plot_1_U2 = plot(t_Axes_1,h_2,U_2(h_2),'-',"DisplayName",'$U_2$');
+ylabel(t_Axes_1,"$U_2$ (m/s)","Interpreter",'latex');
+set(t_Axes_1,"YDir",'normal',"TickLabelInterpreter",'latex',"FontSize",10,'Box','off',"XLimitMethod",'tickaligned');
+hold on
+t_plot_1_U2_sup = plot(t_Axes_1,[h_2(ceil(length(h_2)/2)),h_2(1)],[U_2_sup,U_2_sup],'-.',"DisplayName",'$U_2_limits$');
+hold off
+%
+legend([t_plot_1_L2,t_plot_1_U2,t_plot_1_U2_sup],["$L_2$","$U_2$",'$\sup\limits_{h_2 \ge h_{\rm{c}}}{U_2}$'],"Location",'east','Interpreter','latex',"Box","off",'FontSize',10);
+[t_title_t,t_title_s] = title(t_TCL_1,"\bf 2022 Spring MS8402 Mid-term Exam Pblm 1","Guorui Wei 120034910021","Interpreter",'latex');
+set(t_title_s,'FontSize',8)
+%
+exportgraphics(t_TCL_1,"..\\doc\\fig\\midterm_P1.emf",'Resolution',800,'ContentType','auto','BackgroundColor','none','Colorspace','rgb')
+exportgraphics(t_TCL_1,"..\\doc\\fig\\midterm_P1.png",'Resolution',800,'ContentType','auto','BackgroundColor','none','Colorspace','rgb')
+
+
+%% Problem 2
+
+% params
+U = 40;             % [m/s]
+L = 570e3;          % [m]
+beta_0 = 1.61e-11;  % [m^{-1} s^{-1}]
+%
+beta_plus = beta_0 / (U/L^2);
+y_plus = linspace(-5,5,5001);
+u_plus = @(y_plus) exp(-y_plus.^2 / 2);
+u_plus_second_derivatives_wrt_y_plus = @(y_plus) -(1-y_plus.^2).*exp(-y_plus.^2 / 2);
+[y_1,u_1,exitflag_1,output_1] = fzero(@(x) beta_plus-u_plus_second_derivatives_wrt_y_plus(x),[1 1.5]);
+[y_2,u_2,exitflag_2,output_2] = fzero(@(x) beta_plus-u_plus_second_derivatives_wrt_y_plus(x),[2.5 3]);
+%
+figure("Name","Problem 2")
+t_TCL = tiledlayout(1,2,"TileSpacing","tight","Padding","tight");
+t_Axes_a = nexttile(t_TCL,1);
+t_plot_a = plot(t_Axes_a,u_plus(y_plus),y_plus,'-',"color",'#0072BD',"DisplayName",'$u_+$');
+set(t_Axes_a,"YDir",'normal',"TickLabelInterpreter",'latex',"FontSize",10,'Box','off',"XColor",'black',"YColor",'black');
+xlabel(t_Axes_a,"$u_+$","Interpreter",'latex');
+%
+t_Axes_b = nexttile(t_TCL,2);
+t_plot_b = plot(t_Axes_b,beta_plus-u_plus_second_derivatives_wrt_y_plus(y_plus),y_plus,'-',"color",'#0072BD',"DisplayName",'$u_+$');
+hold on
+plot(t_Axes_b,[0,0],t_Axes_b.YLim,'--');
+plot(t_Axes_b,[u_1,-u_1],[y_1,-y_1],'o');
+plot(t_Axes_b,[u_2,-u_2],[y_2,-y_2],'^');
+hold off
+set(t_Axes_b,"YDir",'normal',"TickLabelInterpreter",'latex',"FontSize",10,'Box','off',"XColor",'black',"YColor",'black');
+xlabel(t_Axes_b,"$\beta_{0+} - \frac{{\rm d}^2 u_+}{({\rm d} y_+)^2}$","Interpreter",'latex');
+%
+ylabel(t_TCL,"$y_+$","Interpreter",'latex');
+[t_title_t,t_title_s] = title(t_TCL,"\bf 2022 Spring MS8402 Mid-term Exam Pblm 2","Guorui Wei 120034910021","Interpreter",'latex');
+set(t_title_s,'FontSize',8)
+%
+exportgraphics(t_TCL,"..\\doc\\fig\\midterm_P2.emf",'Resolution',800,'ContentType','auto','BackgroundColor','none','Colorspace','rgb')
+exportgraphics(t_TCL,"..\\doc\\fig\\midterm_P2.png",'Resolution',800,'ContentType','auto','BackgroundColor','none','Colorspace','rgb')
+
+%% local functions
+
+%% Initialize environment
+function [] = init_env()
+    % set up project directory
+    if ~isfolder("../doc/fig/")
+        mkdir ../doc/fig/
+    end
+    % configure searching path
+    mfile_fullpath = mfilename('fullpath'); % the full path and name of the file in which the call occurs, not including the filename extension.
+    mfile_fullpath_without_fname = mfile_fullpath(1:end-strlength(mfilename));
+    addpath(genpath(mfile_fullpath_without_fname + "../data"), ...
+            genpath(mfile_fullpath_without_fname + "../inc")); % adds the specified folders to the top of the search path for the current MATLAB® session.
+end
