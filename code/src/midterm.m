@@ -22,7 +22,7 @@ h_2 = [160,100];    % [m]
 h_c = L_1.*h_1.*f./(U_1+L_1.*f);
 U_2_sup = U_1.*sqrt(1+L_1.*f./U_1);
 U_2 = @(h_2) U_1.*sqrt(1-(L_1.*(h_1./h_2 -1).*f)./U_1);
-L_2 = @(h_2) L_1.*sqrt((U_1.*h_1)./(U_1.*h_2-(h_1-h_2).*L_1.*f));
+L_2 = @(h_2) L_1.*sqrt((U_1.*h_1.^2)./(h_2.*(U_1.*h_2-(h_1-h_2).*L_1.*f)));
 %
 fprintf("h_2 = %g:\t U_2 = %.4g, L_2 = %.4g,\n" + ...
     "h_2 = %g:\t U_2 = %.3g, L_2 = %.3g.\n" + ...
@@ -63,7 +63,7 @@ U = 40;             % [m/s]
 L = 570e3;          % [m]
 beta_0 = 1.61e-11;  % [m^{-1} s^{-1}]
 %
-beta_plus = beta_0 / (U/L^2);
+beta_plus = beta_0 ./ (U./L.^2);
 y_plus = linspace(-5,5,5001);
 u_plus = @(y_plus) exp(-y_plus.^2 / 2);
 u_plus_second_derivatives_wrt_y_plus = @(y_plus) -(1-y_plus.^2).*exp(-y_plus.^2 / 2);
