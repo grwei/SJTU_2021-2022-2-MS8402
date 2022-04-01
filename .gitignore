@@ -3,6 +3,7 @@ ref/*.pdf
 ref/*.epub
 ~$*
 *.asv
+code/data/
 
 # Prerequisites
 *.d

@@ -55,7 +55,6 @@ set(t_title_s,'FontSize',8)
 exportgraphics(t_TCL_1,"..\\doc\\fig\\midterm_P1.emf",'Resolution',1200,'ContentType','auto','BackgroundColor','none','Colorspace','rgb')
 exportgraphics(t_TCL_1,"..\\doc\\fig\\midterm_P1.png",'Resolution',1200,'ContentType','auto','BackgroundColor','none','Colorspace','rgb')
 
-
 %% Problem 2
 
 % params
