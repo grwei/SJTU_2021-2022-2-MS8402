@@ -8,6 +8,7 @@
 - [Homework 1](hw1_危国锐_120034910021.pdf)
 - [Homework 2](hw2_危国锐_120034910021.pdf)
 - [Mid-term Exam](midterm_危国锐_120034910021.pdf)
+- [Homework 3](hw3_危国锐_120034910021.pdf)
 
 ## Contact me
 
