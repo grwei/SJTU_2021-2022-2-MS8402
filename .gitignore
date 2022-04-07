@@ -4,6 +4,8 @@ ref/*.epub
 ~$*
 *.asv
 code/data/
+./ref/*.eni
+./ref/*.enl
 
 # Prerequisites
 *.d

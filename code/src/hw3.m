@@ -23,8 +23,8 @@ psi = pi*tau_0*(1-X-exp(-X/epsilon)).*sin(pi*Y);
 
 % fig.
 figure("Name","Question 1")
-t_TCL = tiledlayout(1,1,"TileSpacing","tight","Padding","tight");
-t_Axes = nexttile(t_TCL,1);
+t_TCL_pt_SP = tiledlayout(1,1,"TileSpacing","tight","Padding","tight");
+t_Axes = nexttile(t_TCL_pt_SP,1);
 [~,c_contour] = contour(t_Axes,X,Y,psi,"Fill","off");
 clabel([],c_contour,c_contour.TextList([1,idivide(end+1,uint8(2)),end]),"Interpreter",'latex')
 c = colorbar(t_Axes,"Location","eastoutside","TickLabelInterpreter","latex");
@@ -33,43 +33,98 @@ set(t_Axes,"YDir",'normal',"TickLabelInterpreter",'latex',"FontSize",10,'Box','o
 ylabel(t_Axes,"$y$","Interpreter",'latex');
 xlabel(t_Axes,"$x$","Interpreter",'latex');
 title(t_Axes,sprintf("$\\psi = (1-x-\\mathrm{e}^{-x/\\varepsilon}) \\pi \\tau_0 \\sin{\\pi y},\\quad \\tau_0 = %.3g$, $\\varepsilon = %.3g.$",tau_0,epsilon),"Interpreter",'latex')
-[~,t_title_s] = title(t_TCL,"\bf 2022 Spring MS8402 Homework 3 Q1","Guorui Wei 120034910021","Interpreter",'latex');
+[~,t_title_s] = title(t_TCL_pt_SP,"\bf 2022 Spring MS8402 Homework 3 Q1","Guorui Wei 120034910021","Interpreter",'latex');
 set(t_title_s,'FontSize',8)
-exportgraphics(t_TCL,"..\\doc\\fig\\hw3_Q1.emf",'Resolution',600,'ContentType','auto','BackgroundColor','none','Colorspace','rgb')
-exportgraphics(t_TCL,"..\\doc\\fig\\hw3_Q1.png",'Resolution',600,'ContentType','auto','BackgroundColor','none','Colorspace','rgb')
+exportgraphics(t_TCL_pt_SP,"..\\doc\\fig\\hw3_Q1.emf",'Resolution',600,'ContentType','auto','BackgroundColor','none','Colorspace','rgb')
+exportgraphics(t_TCL_pt_SP,"..\\doc\\fig\\hw3_Q1.png",'Resolution',600,'ContentType','auto','BackgroundColor','none','Colorspace','rgb')
 
-%% Question 2
+%% Question 2: init
 
 % import data
 clear; clc; close all;
-path_votemper = "..\data\votemper_control_monthly_highres_3D_202201_OPER_v0.1.nc"; % The temperature of a parcel of sea water would have if moved adiabatically to sea level pressure. This variable is a 3D field.
-path_vosaline = "..\data\vosaline_control_monthly_highres_3D_202201_OPER_v0.1.nc"; % The salt content of sea water as measured on the practical salinity units (PSU) scale. This variable is a 3D field.
+path_votemper = "global-reanalysis-phy-001-031-grepv2-mnstd-monthly_1649316520167.nc"; % The temperature of a parcel of sea water would have if moved adiabatically to sea level pressure. This variable is a 3D field.
+path_vosaline = path_votemper; % The salt content of sea water as measured on the practical salinity units (PSU) scale. This variable is a 3D field.
 finfo = ncinfo(path_votemper);
-nav_lat = ncread(path_votemper,'nav_lat');
-nav_lon = ncread(path_votemper,'nav_lon');
-deptht = ncread(path_votemper,'deptht');
+vec_lat = ncread(path_votemper,'latitude');
+vec_lon = ncread(path_votemper,'longitude');
+[nav_lat,nav_lon] = meshgrid(vec_lat,vec_lon); 
+deptht = ncread(path_votemper,'depth');
+votemper = ncread(path_votemper,'thetao_mean',[1,1,1,1],[Inf,Inf,Inf,1]);
+vosaline = ncread(path_vosaline,'so_mean',[1,1,1,1],[Inf,Inf,Inf,1]);
 %
 n_lat_bin = 255;
-[lat_bin_num,lat_edges] = discretize(nav_lat,n_lat_bin);
-Q2_zonal_average(nav_lat,lat_bin_num,lat_edges,'off');
-%
-lon = -75;
-lat = 36;
-[x,y,arclen] = Q2_location_query(lon,lat,nav_lon,nav_lat);
 
-votemper = ncread(path_votemper,'votemper');
-vosaline = ncread(path_vosaline,'vosaline');
-for y = 495:1021
-    for x = 1:1442
-        [SP,pt,p,SA,CT,N2,p_mid] = Q2_gsw_N2(x,y,nav_lon,nav_lat,deptht,votemper,vosaline,path_votemper,path_vosaline,'on');
-        fprintf("min(N2) = %.3g, x = %i, y = %i.\n",min(N2,[],'all'),x,y);
-    end
+Q2_zonal_average(n_lat_bin,'on');
+%
+lat_center = [6,45,74,82];
+lat_tol = 0.5;
+%
+ind_depth_thrs = find(deptht > 750,1);
+TF_is_ocean = ~isnan(vosaline(:,:,ind_depth_thrs));
+ind_N2_min = nan(size(lat_center));
+ind_N2_max = ind_N2_min;
+ind_N2_avg_min = ind_N2_min;
+ind_N2_avg_max = ind_N2_min;
+val_N2_min = ind_N2_min;
+val_N2_max = ind_N2_min;
+val_N2_avg_min = ind_N2_min;
+val_N2_avg_max = ind_N2_min;
+for i = 1:length(lat_center)
+    [ind_N2_min(i),ind_N2_max(i),ind_N2_avg_min(i),ind_N2_avg_max(i),val_N2_min(i),val_N2_max(i),val_N2_avg_min(i),val_N2_avg_max(i)] = Q2_gsw_N2_min_max(lat_center(i),lat_tol,TF_is_ocean,nav_lon,nav_lat,deptht,votemper,vosaline);
 end
+
+%% Question 2
+
+ind_tropi = ind_N2_max(1);
+ind_mid = ind_N2_max(2);
+ind_polar = ind_N2_max(4);
+ind_vec = [ind_tropi,ind_mid,ind_polar];
+%
+SP = nan(length(deptht),length(ind_vec));
+pt = SP;
+p = SP;
+SA = SP;
+CT = SP;
+pot_rho = SP;
+N2 = nan(length(deptht)-1,length(ind_vec));
+p_mid = N2;
+for i = 1:length(ind_vec)
+    [x,y] = ind2sub(size(nav_lon),ind_vec(i));
+    [SP(:,i),pt(:,i),p(:,i),SA(:,i),CT(:,i),N2(:,i),p_mid(:,i),pot_rho(:,i)] = Q2_gsw_N2(x,y,nav_lon,nav_lat,deptht,votemper,vosaline);
+end
+%
+figure("Name","Q2_pt_SP_vertical_profile")
+t_TCL_pt_SP = tiledlayout(1,2,"TileSpacing","tight","Padding","tight");
+t_Axes_pt = nexttile(t_TCL_pt_SP);
+t_Axes_pt = Q2_plot_vertical(t_Axes_pt,pt,p,ind_vec,nav_lat,nav_lon,"potential temperature $(^{\circ}{\rm{C}})$","pressure (dbar)","temperature");
+t_Axes_SP = nexttile(t_TCL_pt_SP);
+t_Axes_SP = Q2_plot_vertical(t_Axes_SP,SP,p,ind_vec,nav_lat,nav_lon,"Salinity (psu)","pressure (dbar)","Salinity");
+%
+[~,t_title_s] = title(t_TCL_pt_SP,"\bf 2022 Spring MS8402 Homework 3 Q2","Guorui Wei 120034910021","Interpreter",'latex');
+set(t_title_s,'FontSize',8)
+%
+exportgraphics(t_TCL_pt_SP,"..\\doc\\fig\\hw3_Q2_pt_SP_vertical_profile.emf",'Resolution',600,'ContentType','auto','BackgroundColor','none','Colorspace','rgb')
+exportgraphics(t_TCL_pt_SP,"..\\doc\\fig\\hw3_Q2_pt_SP_vertical_profile.png",'Resolution',600,'ContentType','auto','BackgroundColor','none','Colorspace','rgb')
+%
+figure("Name","Q2_rho_N2_vertical_profile")
+t_TCL_rho_N2 = tiledlayout(1,2,"TileSpacing","tight","Padding","tight");
+t_Axes_rho = nexttile(t_TCL_rho_N2);
+t_Axes_rho = Q2_plot_vertical(t_Axes_rho,pot_rho,p,ind_vec,nav_lat,nav_lon,"potential density $(\rm{kg}/\rm{m}^3)$","pressure (dbar)","density");
+t_Axes_N2 = nexttile(t_TCL_rho_N2);
+t_Axes_N2 = Q2_plot_vertical(t_Axes_N2,N2,p_mid,ind_vec,nav_lat,nav_lon,"$N^2$ $(\rm{rad}^2 / s^2)$","pressure (dbar)","Stratification frequency");
+%
+[~,t_title_s] = title(t_TCL_rho_N2,"\bf 2022 Spring MS8402 Homework 3 Q2","Guorui Wei 120034910021","Interpreter",'latex');
+set(t_title_s,'FontSize',8)
+%
+exportgraphics(t_TCL_rho_N2,"..\\doc\\fig\\hw3_Q2_rho_N2_vertical_profile.emf",'Resolution',600,'ContentType','auto','BackgroundColor','none','Colorspace','rgb')
+exportgraphics(t_TCL_rho_N2,"..\\doc\\fig\\hw3_Q2_rho_N2_vertical_profile.png",'Resolution',600,'ContentType','auto','BackgroundColor','none','Colorspace','rgb')
 
 %% local functions
 
 %% Initialize environment
 function [] = init_env()
+% Initialize environment
+%
     % set up project directory
     if ~isfolder("../doc/fig/")
         mkdir ../doc/fig/
@@ -79,19 +134,21 @@ function [] = init_env()
     mfile_fullpath_without_fname = mfile_fullpath(1:end-strlength(mfilename));
     addpath(genpath(mfile_fullpath_without_fname + "../data"), ...
             genpath(mfile_fullpath_without_fname + "../inc")); % adds the specified folders to the top of the search path for the current MATLAB® session.
+
+    return;
 end
 
 %% surface zonal average 
-function [] = Q2_zonal_average(nav_lat,lat_bin_num,lat_edges,fig_EN)
+function [] = Q2_zonal_average(n_lat_bin,fig_EN)
 % hw3 Q2
 %
     arguments
-        nav_lat
-        lat_bin_num
-        lat_edges
+        n_lat_bin
         fig_EN string = 'on'
     end
-
+    
+    nav_lat = ncread("..\data\sosstsst_control_monthly_highres_2D_202201_OPER_v0.1.nc",'nav_lat');
+    [lat_bin_num,lat_edges] = discretize(nav_lat,n_lat_bin);
     sosstsst = ncread("..\data\sosstsst_control_monthly_highres_2D_202201_OPER_v0.1.nc",'sosstsst'); % [deg C] Water temperature close to the ocean surface. This variable is a 2D field.
     sosaline = ncread("..\data\sosaline_control_monthly_highres_2D_202201_OPER_v0.1.nc",'sosaline'); % [psu] Salt concentration close to the ocean surface. This variable is a 2D field.
     %
@@ -140,7 +197,7 @@ end
 
 %% find nearest data point
 function [x,y,arclen] = Q2_location_query(lon,lat,nav_lon,nav_lat)
-%%% find nearest data point
+% find nearest data point
 % OUTPUT:
 % x: lon index
 % y: lat index
@@ -163,7 +220,7 @@ function [x,y,arclen] = Q2_location_query(lon,lat,nav_lon,nav_lat)
 end
 
 %%
-function [SP,pt,p,SA,CT,N2,p_mid] = Q2_gsw_N2(x,y,nav_lon,nav_lat,deptht,votemper,vosaline,path_votemper,path_vosaline,mem_EN)
+function [SP,pt,p,SA,CT,N2,p_mid,pot_rho] = Q2_gsw_N2(x,y,nav_lon,nav_lat,deptht,votemper,vosaline,p_ref,mem_EN,path_votemper,path_vosaline)
 % Q2
 %
     arguments
@@ -174,9 +231,10 @@ function [SP,pt,p,SA,CT,N2,p_mid] = Q2_gsw_N2(x,y,nav_lon,nav_lat,deptht,votempe
         deptht
         votemper
         vosaline
+        p_ref = 0; % reference pressure of potential density
+        mem_EN string = 'on' % accelerate by storing large data in memory
         path_votemper = "..\data\votemper_control_monthly_highres_3D_202201_OPER_v0.1.nc";
         path_vosaline = "..\data\vosaline_control_monthly_highres_3D_202201_OPER_v0.1.nc";
-        mem_EN string = 'off' % accelerate by storing large data in memory
     end
     
     if (strcmpi(mem_EN,"on"))
@@ -207,15 +265,111 @@ function [SP,pt,p,SA,CT,N2,p_mid] = Q2_gsw_N2(x,y,nav_lon,nav_lat,deptht,votempe
     lon = nav_lon(x,y); % [deg E]
     [SA,in_ocean] = gsw_SA_from_SP(SP,p,lon,lat);
     CT = gsw_CT_from_pt(SA,pt);
-    if(~min(gsw_infunnel(SA,CT,p)))
+%     if(~min(gsw_infunnel(SA,CT,p)))
 %         warning("warning: not in funnel! (x,y) = (%i,%i)\n",x,y);
-    end
+%     end
     if (nargout < 6)
         N2 = uint8(0); p_mid = N2;
         return;
     end
-
+    
     [N2,p_mid] = gsw_Nsquared(SA,CT,p,lat);
+    if (nargout < 8)
+        return;
+    end
 
+    pot_rho = gsw_rho(SA,CT,p_ref);
+
+    return;
+end
+
+%%
+function [ind_N2_min,ind_N2_max,ind_N2_avg_min,ind_N2_avg_max,val_N2_min,val_N2_max,val_N2_avg_min,val_N2_avg_max] = Q2_gsw_N2_min_max(lat_center,lat_tol,TF_is_ocean,nav_lon,nav_lat,deptht,votemper,vosaline,p_ref,mem_EN,path_votemper,path_vosaline)
+% Q2
+%
+    arguments
+        lat_center
+        lat_tol
+        TF_is_ocean
+        nav_lon
+        nav_lat
+        deptht
+        votemper
+        vosaline
+        p_ref = 0; % reference pressure of potential density
+        mem_EN string = 'on' % accelerate by storing large data in memory
+        path_votemper = "..\data\votemper_control_monthly_highres_3D_202201_OPER_v0.1.nc";
+        path_vosaline = "..\data\vosaline_control_monthly_highres_3D_202201_OPER_v0.1.nc";
+    end
+
+    % params
+    depth_max = 750;
+    %
+    tStart = tic;
+    loc_ind_linear = find(abs(nav_lat-lat_center) < lat_tol & TF_is_ocean);
+    N2_min = nan(size(loc_ind_linear));
+    N2_max = N2_min;
+    N2_avg = N2_min;
+    for i = 1:length(loc_ind_linear)
+        [x,y] = ind2sub(size(nav_lon),loc_ind_linear(i));
+        [~,~,~,~,~,N2,~,~] = Q2_gsw_N2(x,y,nav_lon,nav_lat,deptht,votemper,vosaline,p_ref,mem_EN,path_votemper,path_vosaline);
+        N2_min(i) = min(N2(deptht<depth_max),[],"omitnan");
+        N2_max(i) = max(N2(deptht<depth_max),[],"omitnan");
+        N2_avg(i) = mean(N2(deptht<depth_max),"omitnan");
+%         fprintf("\rDone: %i/%i, (%.2f N, %.2f E), N2_min = %.2g, N2_max = %.2g.", ...
+%             i,length(loc_ind_linear),nav_lat(loc_ind_linear(i)),nav_lon(loc_ind_linear(i)),N2_min(i),N2_max(i));
+    end
+    [val_N2_min,ind_min] = min(N2_min,[],"omitnan",'linear'); 
+    [val_N2_max,ind_max] = max(N2_max,[],"omitnan",'linear'); 
+    [val_N2_avg_min,ind_avg_min] = min(N2_avg,[],"omitnan",'linear'); 
+    [val_N2_avg_max,ind_avg_max] = max(N2_avg,[],"omitnan",'linear'); 
+    ind_N2_min = loc_ind_linear(ind_min);
+    ind_N2_max = loc_ind_linear(ind_max);
+    ind_N2_avg_min = loc_ind_linear(ind_avg_min);
+    ind_N2_avg_max = loc_ind_linear(ind_avg_max);
+    fprintf("\nSummary: %.1f secs used, %i points processed.\n" + ...
+        "lat = %.2f N, lat_tol = %.2f deg, depth_max = %.2f m.\n" + ...
+        "N2_min = %.2e (%.2f N, %.2f E),\n" + ...
+        "N2_max = %.2e (%.2f N, %.2f E),\n" + ...
+        "N2_avg_min = %.2e (%.2f N, %.2f E),\n" + ...
+        "N2_avg_max = %.2e (%.2f N, %.2f E).\n", ...
+        toc(tStart),length(loc_ind_linear), ...
+        lat_center,lat_tol,depth_max, ...
+        val_N2_min,nav_lat(ind_N2_min),nav_lon(ind_N2_min), ...
+        val_N2_max,nav_lat(ind_N2_max),nav_lon(ind_N2_max), ...
+        val_N2_avg_min,nav_lat(ind_N2_avg_min),nav_lon(ind_N2_avg_min), ...
+        val_N2_avg_max,nav_lat(ind_N2_avg_max),nav_lon(ind_N2_avg_max));
+
+    return;
+end
+
+%%
+function [t_Axes] = Q2_plot_vertical(t_Axes,x_data,y_data,ind_vec,nav_lat,nav_lon,xlabel_str,ylabel_str,axes_title_str)
+% Q2
+%
+    arguments
+        t_Axes
+        x_data
+        y_data
+        ind_vec
+        nav_lat
+        nav_lon
+        xlabel_str
+        ylabel_str
+        axes_title_str
+    end
+
+    hold on
+    for i = 1:length(ind_vec)
+        t_plot_pt = plot(t_Axes,x_data(:,i),y_data(:,i),'-',"DisplayName",sprintf("%.2f$^{\\circ}{\\rm{N}}$, %.2f$^{\\circ}{\\rm{E}}$",nav_lat(ind_vec(i)),nav_lon(ind_vec(i))));
+    end
+    hold off
+    grid on
+    set(t_Axes,"YDir",'reverse',"TickLabelInterpreter",'latex',"FontSize",10,'Box','off');
+    xlabel(t_Axes,xlabel_str,"Interpreter",'latex');
+    ylabel(t_Axes,ylabel_str,"Interpreter",'latex');
+    legend(t_Axes,"Location",'best','Interpreter','latex',"Box","off",'FontSize',10);
+%     title(t_Axes,axes_title_str,"Interpreter",'latex')
+    
     return;
 end
